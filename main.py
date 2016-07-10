@@ -12,9 +12,7 @@ class Application:
     def __init__(self):
         self.root = Tk()
 
-        self.config = ConfigParser()
-        self.config.read(self.get_config_path())
-        print("Read config from " + self.get_config_path())
+        self.get_config()
 
         self.size = (800, 600)
 
@@ -25,6 +23,38 @@ class Application:
         self.createWidgets()
 
         self.root.mainloop()
+
+    '''
+        Parse in the config and, by nature of calling the get_ methods, populate it with some default values
+
+        I don't like the way this works, to be honest. It's modifying a variable outside of it's scope
+        and basically creating the defaults by hiding it. It's creating a config, not just "getting" one. This needs
+        to be cleaned up, but I'll leave it for now in the interest of time.
+    '''
+    def get_config(self):
+        self.config = ConfigParser()
+        self.config.read(self.get_config_path())
+        print("Read config from " + self.get_config_path())
+
+        self.get_file_extensions()
+        self.get_source_dir()
+        self.get_directory_list()
+
+        if len(self.config['sources']) <= 0:
+            self.get_initial_source()
+
+        self.write_config()
+
+    '''
+        If there are no sources configured, request one
+    '''
+    def get_initial_source(self):
+        directory = self.get_directory("Select Source")
+
+        if not directory:
+            sys.exit(0)
+
+        self.config['sources'] = {self.get_filename(directory): directory}
 
     '''
         Build out the interface
@@ -132,7 +162,8 @@ class Application:
     '''
         Given a filepath, return the last item (the directory name, or filename perhaps)
     '''
-    def get_filename(self, path):
+    @staticmethod
+    def get_filename(path):
         return os.path.split(path)[-1]
 
     '''
@@ -167,7 +198,6 @@ class Application:
             defaults = {}
 
         if key not in self.config:
-            print(defaults)
             self.config[key] = defaults
 
         values = {}
@@ -180,29 +210,25 @@ class Application:
         Write the config to the config file
     '''
     def write_config(self):
+        if not os.path.exists(self.get_config_directory()):
+            os.makedirs(self.get_config_directory())
+
         with open(self.get_config_path(), 'w') as configfile:
             self.config.write(configfile)
+
         print("Wrote config to " + self.get_config_path())
 
     '''
         Get the directory list from the config.ini
     '''
-    def read_directory_list(self):
+    def get_directory_list(self):
         return self.get_config_key_formatted('directories')
 
     '''
         Returns a list of source directories to look through
     '''
     def get_source_dir(self):
-        sources = self.get_config_key_formatted('sources')
-
-        if len(sources) <= 0:
-            directory = ""
-            while directory == "":
-                directory = self.get_directory()
-            sources = {directory}
-
-        return sources
+        return self.get_config_key_formatted('sources')
 
     '''
         Returns a list of file extensions to scan for
@@ -227,14 +253,21 @@ class Application:
     '''
     @staticmethod
     def get_config_path():
-        return os.path.join(user_data_dir("ImageMover", "jcampbellco"), 'config.ini')
+        return os.path.join(Application.get_config_directory(), 'config.ini')
+
+    @staticmethod
+    def get_config_directory():
+        return user_data_dir("ImageMover")
 
     '''
         Returns a directory path
     '''
     @staticmethod
-    def get_directory():
-        directory = filedialog.askdirectory()
+    def get_directory(message=None):
+        if message is None:
+            message = "Select Directory"
+
+        directory = filedialog.askdirectory(title=message)
 
         if not directory:
             print("No directory selected")
