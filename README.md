@@ -44,3 +44,8 @@ Hopefully it should be fairly self explanatory, but the three sections are confi
 * Add list of source directories
 * Add configuration menu for file extensions
 * Add prev/next buttons under image preview
+* Make images resize to fill the window while maintaining aspect ratio
+
+# Bugs
+
+* The program should open at roughly 800x600 pixels, which is what the images are dynamically resized to. However, if there are no images to load, the entire UI lags, does not load, and instead a full-screen grey box shows up
