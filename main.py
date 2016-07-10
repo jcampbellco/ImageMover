@@ -227,15 +227,7 @@ class Application:
     '''
     @staticmethod
     def get_config_path():
-        return os.path.join(user_data_dir("ImageMover", "reddeth"), 'config.ini')
-
-    '''
-        Get the source directory
-        @todo Store in the config.ini
-    '''
-    @staticmethod
-    def get_source_path():
-        return os.path.join('C:', 'Users', 'reddeth', 'Downloads')
+        return os.path.join(user_data_dir("ImageMover", "jcampbellco"), 'config.ini')
 
     '''
         Returns a directory path

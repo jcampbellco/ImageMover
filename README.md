@@ -37,3 +37,10 @@ Hopefully it should be fairly self explanatory, but the three sections are confi
 `sources` configures where to search for files. For a lot of people by default, this might be the Downloads directory. Currently the alias (`from` in the example) doesn't really "do" anything, so feel free to name it whatever you'd like.
 
 `extensions` are a list of file extension types to browse for. Be careful with modifying this list, I have not tested some of the more "odd" file types. Anything in this list must be an openable and displayable file type according to the Python `PIL` (Pillow) library
+
+# ToDo
+
+* Break up code into multiple files/classes
+* Add list of source directories
+* Add configuration menu for file extensions
+* Add prev/next buttons under image preview
