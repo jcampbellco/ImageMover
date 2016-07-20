@@ -67,60 +67,69 @@ class Application:
     '''
     def createWidgets(self):
 
-        self.image_frame = tkinter.Frame()
-        self.image_frame.grid(row=0, column=0)
+        self.image_frame = tkinter.Frame(self.root)
+        self.image_frame.pack(side="left", fill="both", expand=True, padx=5)
 
-        self.control_frame = tkinter.Frame()
-        self.control_frame.grid(row=0, column=1, padx=5, sticky="e")
+        self.control_frame = tkinter.Frame(self.root)
+        self.control_frame.pack(side="right", fill="both", expand=False, padx=5)
+
+        self.destinations_frame = tkinter.Frame(self.control_frame)
+        self.destinations_frame.pack(fill="y", expand=1)
+
+        self.separator = ttk.Separator(self.control_frame)
+        self.separator.pack(fill="x", expand=0, pady=5)
+
+        self.sources_frame = tkinter.Frame(self.control_frame)
+        self.sources_frame.pack(fill="y", expand=1)
 
         image = self.get_image()
         self.image_preview = tkinter.Label(self.image_frame, image=image, height=self.size[0], width=self.size[1])
         self.image_preview.image = image
-        self.image_preview.grid(row=0, column=0, rowspan=3)
+        self.image_preview.grid(row=0, column=0, rowspan=3, padx=5, pady=5)
 
         # Add the thumbnail list here
 
-        self.destination_label = tkinter.Label(self.control_frame)
+        self.destination_label = tkinter.Label(self.destinations_frame)
         self.destination_label["text"] = "Destinations"
         self.destination_label.grid(row=0, column=0, columnspan=2)
 
-        self.destination_list = tkinter.Listbox(self.control_frame)
+        self.destination_list = tkinter.Listbox(self.destinations_frame)
         self.populate_listbox(self.destination_list, "destinations")
         self.destination_list.bind('<Double-Button-1>', self.move_image_handler)
         self.destination_list.grid(row=1, column=0, columnspan=2, sticky="ns")
 
-        self.add_destination = tkinter.Button(self.control_frame)
+        self.add_destination = tkinter.Button(self.destinations_frame)
         self.add_destination["text"] = "Add"
         self.add_destination["command"] = self.add_directory_handler
         self.add_destination.grid(row=2, column=0, sticky="ew")
 
-        self.remove_destination = tkinter.Button(self.control_frame)
+        self.remove_destination = tkinter.Button(self.destinations_frame)
         self.remove_destination["text"] = "Remove"
         self.remove_destination["command"] = self.remove_directory_handler
-        self.remove_destination.grid(row=2, column=1, sticky="ew")
+        self.remove_destination.grid(row=2, column=1, sticky="ew", pady=5)
 
-        self.separator = ttk.Separator(self.control_frame)
-        self.separator.grid(row=3, column=0, columnspan=2, sticky="ew", pady=5)
-
-        self.source_label = tkinter.Label(self.control_frame)
+        self.source_label = tkinter.Label(self.sources_frame)
         self.source_label["text"] = "Sources"
-        self.source_label.grid(row=4, column=0, columnspan=2, sticky="ns")
+        self.source_label.grid(row=0, column=0, columnspan=2, sticky="ns", pady=5)
 
         # @todo: Actually set up the source list to work properly with adding/removing
-        self.source_list = tkinter.Listbox(self.control_frame)
+        self.source_list = tkinter.Listbox(self.sources_frame)
         self.populate_listbox(self.source_list, "sources")
         self.source_list.bind('<Double-Button-1>', self.move_image_handler)
-        self.source_list.grid(row=5, column=0, columnspan=2)
+        self.source_list.grid(row=1, column=0, columnspan=2, sticky="ns")
 
-        self.add_source = tkinter.Button(self.control_frame)
+        self.add_source = tkinter.Button(self.sources_frame)
         self.add_source["text"] = "Add"
         self.add_source["command"] = self.add_directory_handler
-        self.add_source.grid(row=6, column=0, sticky="ew")
+        self.add_source.grid(row=2, column=0, sticky="ew", pady=5)
 
-        self.remove_source = tkinter.Button(self.control_frame)
+        self.remove_source = tkinter.Button(self.sources_frame)
         self.remove_source["text"] = "Remove"
         self.remove_source["command"] = self.remove_directory_handler
-        self.remove_source.grid(row=6, column=1, sticky="ew")
+        self.remove_source.grid(row=2, column=1, sticky="ew", pady=5)
+
+        self.sources_frame.rowconfigure(1, weight=1)
+        self.destinations_frame.rowconfigure(1, weight=1)
 
     '''
         Attempts to set an image to the image label
