@@ -1,16 +1,22 @@
-import tkinter as tk
-import glob as glob
+import tkinter
+import glob
 import shutil
 from tkinter import filedialog
-from tkinter import *
+from tkinter import ttk
 from appdirs import *
 from configparser import ConfigParser
 from PIL import Image, ImageTk
 
+'''
+    The entry point for the application
 
+    Some todo items:
+    @todo: Break up into separate objects
+    @todo: Figure out how to make the config panel stick to the right side and the image panel to resize accordingly with window resizes
+'''
 class Application:
     def __init__(self):
-        self.root = Tk()
+        self.root = tkinter.Tk()
 
         self.get_config()
 
@@ -60,25 +66,61 @@ class Application:
         Build out the interface
     '''
     def createWidgets(self):
+
+        self.image_frame = tkinter.Frame()
+        self.image_frame.grid(row=0, column=0)
+
+        self.control_frame = tkinter.Frame()
+        self.control_frame.grid(row=0, column=1, padx=5, sticky="e")
+
         image = self.get_image()
-        self.image_preview = tk.Label(self.root, image=image, height=self.size[0], width=self.size[1])
+        self.image_preview = tkinter.Label(self.image_frame, image=image, height=self.size[0], width=self.size[1])
         self.image_preview.image = image
         self.image_preview.grid(row=0, column=0, rowspan=3)
 
-        self.add_directory = tk.Button(self.root)
-        self.add_directory["text"] = "Add Directory"
-        self.add_directory["command"] = self.add_directory_handler
-        self.add_directory.grid(row=0, column=1)
+        # Add the thumbnail list here
 
-        self.remove_directory = tk.Button(self.root)
-        self.remove_directory["text"] = "Remove Directory"
-        self.remove_directory["command"] = self.remove_directory_handler
-        self.remove_directory.grid(row=0, column=2)
+        self.destination_label = tkinter.Label(self.control_frame)
+        self.destination_label["text"] = "Destinations"
+        self.destination_label.grid(row=0, column=0, columnspan=2)
 
-        self.directory_list = tk.Listbox(self.root)
-        self.populate_listbox(self.directory_list)
-        self.directory_list.bind('<Double-Button-1>', self.move_image_handler)
-        self.directory_list.grid(row=1, column=1, columnspan=2)
+        self.destination_list = tkinter.Listbox(self.control_frame)
+        self.populate_listbox(self.destination_list, "destinations")
+        self.destination_list.bind('<Double-Button-1>', self.move_image_handler)
+        self.destination_list.grid(row=1, column=0, columnspan=2, sticky="ns")
+
+        self.add_destination = tkinter.Button(self.control_frame)
+        self.add_destination["text"] = "Add"
+        self.add_destination["command"] = self.add_directory_handler
+        self.add_destination.grid(row=2, column=0, sticky="ew")
+
+        self.remove_destination = tkinter.Button(self.control_frame)
+        self.remove_destination["text"] = "Remove"
+        self.remove_destination["command"] = self.remove_directory_handler
+        self.remove_destination.grid(row=2, column=1, sticky="ew")
+
+        self.separator = ttk.Separator(self.control_frame)
+        self.separator.grid(row=3, column=0, columnspan=2, sticky="ew", pady=5)
+
+        self.source_label = tkinter.Label(self.control_frame)
+        self.source_label["text"] = "Sources"
+        self.source_label.grid(row=4, column=0, columnspan=2, sticky="ns")
+
+        # @todo: Actually set up the source list to work properly with adding/removing
+        self.source_list = tkinter.Listbox(self.control_frame)
+        self.populate_listbox(self.source_list, "sources")
+        self.source_list.bind('<Double-Button-1>', self.move_image_handler)
+        self.source_list.grid(row=5, column=0, columnspan=2)
+
+        self.add_source = tkinter.Button(self.control_frame)
+        self.add_source["text"] = "Add"
+        self.add_source["command"] = self.add_directory_handler
+        self.add_source.grid(row=6, column=0, sticky="ew")
+
+        self.remove_source = tkinter.Button(self.control_frame)
+        self.remove_source["text"] = "Remove"
+        self.remove_source["command"] = self.remove_directory_handler
+        self.remove_source.grid(row=6, column=1, sticky="ew")
 
     '''
         Attempts to set an image to the image label
@@ -128,7 +170,7 @@ class Application:
     '''
     def move_image_handler(self, event):
         # is this actually the best way to get the selected desintation directory?
-        destination = self.config['directories'][self.directory_list.get(ACTIVE)]
+        destination = self.config['destinations'][self.destination_list.get(tkinter.ACTIVE)]
 
         filename = self.get_filename(self.current_image)
 
@@ -150,12 +192,12 @@ class Application:
         short_dir = self.get_filename(directory)
 
         # short circuit if there was not a directory selected
-        if not directory or short_dir in self.config['directories']:
+        if not directory or short_dir in self.config['destinations']:
             return
 
-        self.config['directories'][short_dir] = directory
+        self.config['destinations'][short_dir] = directory
 
-        self.populate_listbox(self.directory_list)
+        self.populate_listbox(self.destination_list)
         print("Adding " + directory + " to directory list")
         self.write_directory_list()
 
@@ -170,19 +212,19 @@ class Application:
         Handler for removing a directory
     '''
     def remove_directory_handler(self):
-        directory = self.config['directories'][self.directory_list.get(ACTIVE)]
-        self.config['directories'].pop(self.directory_list.get(ACTIVE))
+        directory = self.config['destinations'][self.destination_list.get(tkinter.ACTIVE)]
+        self.config['destinations'].pop(self.destination_list.get(tkinter.ACTIVE))
         print("Removing " + directory + " from the directory list")
         self.write_directory_list()
-        self.populate_listbox(self.directory_list)
+        self.populate_listbox(self.destination_list)
 
     '''
         Populate the listbox
     '''
-    def populate_listbox(self, listbox):
-        listbox.delete(0, END)
-        for directory in self.config['directories']:
-            listbox.insert(END, directory)
+    def populate_listbox(self, listbox, source):
+        listbox.delete(0, tkinter.END)
+        for directory in self.config[source]:
+            listbox.insert(tkinter.END, directory)
 
     '''
         Write the current directory list to the config.ini file
@@ -222,10 +264,10 @@ class Application:
         Get the directory list from the config.ini
     '''
     def get_directory_list(self):
-        return self.get_config_key_formatted('directories')
+        return self.get_config_key_formatted('destinations')
 
     '''
-        Returns a list of source directories to look through
+        Returns a list of source destinations to look through
     '''
     def get_source_dir(self):
         return self.get_config_key_formatted('sources')
