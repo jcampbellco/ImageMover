@@ -28,6 +28,8 @@ class Application:
 
         self.createWidgets()
 
+        self.root.minsize(640, 480)
+
         self.root.mainloop()
 
     '''
