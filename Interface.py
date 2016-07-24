@@ -4,16 +4,19 @@ import os
 from tkinter import Tk
 from tkinter import ttk
 from tkinter import filedialog
+from tkinter import PhotoImage
 from Config import Config
+from Filesystem import Filesystem
 
 
 class Interface(Tk):
     size = (640, 480)
 
-    def __init__(self, application):
+    def __init__(self, config: Config, filesystem: Filesystem):
         Tk.__init__(self)
 
-        self.application = application
+        self.config = config
+        self.filesystem = filesystem
 
         self.image_frame = tkinter.Frame(self)
         self.image_frame.pack(side="left", fill="both", expand=True, padx=5)
@@ -30,9 +33,9 @@ class Interface(Tk):
         self.sources_frame = tkinter.Frame(self.control_frame)
         self.sources_frame.pack(fill="y", expand=1)
 
-        image = application.get_image()
-        self.image_preview = tkinter.Label(self.image_frame, image=image, height=self.size[0], width=self.size[1])
-        self.image_preview.image = image
+        # image = self.filesystem.get_image(self.get_imageframe_size())
+        self.image_preview = tkinter.Label(self.image_frame, height=self.size[0], width=self.size[1])
+        # self.image_preview.image = image
         self.image_preview.grid(row=0, column=0, rowspan=3, padx=5, pady=5)
 
         # Add the thumbnail list here
@@ -79,13 +82,15 @@ class Interface(Tk):
         self.sources_frame.rowconfigure(1, weight=1)
         self.destinations_frame.rowconfigure(1, weight=1)
 
+        self.set_image(self.filesystem.get_image(self.get_imageframe_size()))
+
     '''
         Populate the listbox
     '''
 
     def populate_listbox(self, listbox, source):
         listbox.delete(0, tkinter.END)
-        for directory in self.application.config[source]:
+        for directory in self.config[source]:
             listbox.insert(tkinter.END, directory)
 
     def add_source_handler(self):
@@ -104,20 +109,20 @@ class Interface(Tk):
         short_dir = self.get_filename(directory)
 
         # short circuit if there was not a directory selected
-        if not directory or short_dir in self.application.config[config_source]:
+        if not directory or short_dir in self.config[config_source]:
             return
 
-        self.application.config[config_source][short_dir] = directory
+        self.config[config_source][short_dir] = directory
 
         self.populate_listbox(listbox, config_source)
         print("Adding " + directory + " to " + config_source + " list")
 
     def remove_source_handler(self):
-        directory = self.application.config[Config.SOURCES][self.source_list.get(tkinter.ACTIVE)]
+        directory = self.config[Config.SOURCES][self.source_list.get(tkinter.ACTIVE)]
         self.remove_directory(Config.SOURCES, directory, self.source_list)
 
     def remove_destination_handler(self):
-        directory = self.application.config[Config.DESTINATIONS][self.destination_list.get(tkinter.ACTIVE)]
+        directory = self.config[Config.DESTINATIONS][self.destination_list.get(tkinter.ACTIVE)]
         self.remove_directory(Config.DESTINATIONS, directory, self.destination_list)
 
     '''
@@ -127,13 +132,13 @@ class Interface(Tk):
     def remove_directory(self, config_source, directory, listbox):
         # This feels a bit dirty, but I'm not sure how to handle the directory coming in as the full path, but needing
         # the key to access it... @todo Get the key from the listbox, not the item?
-        if directory not in self.application.config[config_source]:
-            for alias in self.application.config[config_source]:
-                if directory == self.application.config[config_source][alias]:
+        if directory not in self.config[config_source]:
+            for alias in self.config[config_source]:
+                if directory == self.config[config_source][alias]:
                     directory = alias
                     break
 
-        removed = self.application.config[config_source].pop(directory, 0)
+        removed = self.config[config_source].pop(directory, 0)
 
         if removed != 0:
             print("Removing " + directory + " from the " + config_source + " list")
@@ -148,18 +153,30 @@ class Interface(Tk):
 
     def move_image_handler(self, event):
         # is this actually the best way to get the selected destination directory?
-        destination = self.application.config[Config.DESTINATIONS][self.destination_list.get(tkinter.ACTIVE)]
+        destination = self.config[Config.DESTINATIONS][self.destination_list.get(tkinter.ACTIVE)]
 
-        filename = self.application.get_filename(self.application.current_image)
+        filename = self.filesystem.get_filename(self.filesystem.current_filename)
 
-        destination_full = os.path.join(destination, self.application.get_filename(self.application.current_image))
+        destination_full = os.path.join(destination, self.filesystem.get_filename(self.filesystem.current_filename))
 
-        shutil.move(self.application.current_image, destination_full)
+        shutil.move(self.filesystem.current_filename, destination_full)
 
-        print("Moving " + filename + " from " + self.application.current_image + " to " + destination)
+        print("Moving " + filename + " from " + self.filesystem.current_filename + " to " + destination)
 
-        self.application.current_image = self.application.get_new_image()
-        self.application.set_image()
+        self.set_image(self.filesystem.get_image(self.get_imageframe_size()))
+
+    '''
+        Sets a new image to the preview window
+    '''
+    def set_image(self, image: PhotoImage):
+        self.image_preview.image = image
+        self.image_preview.configure(image=image)
+
+    '''
+        Returns the current size of the image frame
+    '''
+    def get_imageframe_size(self):
+        return self.image_preview.winfo_width(), self.image_preview.winfo_height()
 
     '''
         Returns a directory path
