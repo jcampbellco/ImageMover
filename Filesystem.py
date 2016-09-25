@@ -1,12 +1,10 @@
 import glob
 from appdirs import *
 from Config import Config
-from PIL import Image, ImageTk
+from PIL import Image
 
 
 class Filesystem:
-
-    images = {}
 
     image_resources = {}
 
@@ -16,11 +14,6 @@ class Filesystem:
         self.config = config
         self.get_image_list()
 
-    def get_new_image(self):
-        self.current_filename = self.images.popitem()[1] if len(self.images) > 0 else None
-        print("Fetching " + str(self.current_filename))
-        return self.current_filename
-
     def get_image_list(self):
         i = 0
 
@@ -28,7 +21,6 @@ class Filesystem:
             for extension in self.config[Config.EXTENSIONS]:
                 print("Scanning " + self.config[Config.SOURCES][source] + '/*.' + extension)
                 for file in glob.glob(self.config[Config.SOURCES][source] + '/*.' + extension):
-                    self.images[i] = file
                     i += 1
 
                     if file not in self.image_resources:
@@ -37,18 +29,11 @@ class Filesystem:
         print("Found " + str(len(self.image_resources)) + " images in " + str(len(self.config[Config.SOURCES])) +
               " directories")
 
-        return self.images
+        return self.image_resources
 
-    def get_image(self, size):
-        if self.images.__len__() <= 0:
-            return
-
-        original = Image.open(self.get_new_image())
-
-        original.thumbnail(size, Image.ANTIALIAS)
-
-        # @todo get rid of the dependency on ImageTk - filesystem shouldn't have knowledge of the interface
-        return ImageTk.PhotoImage(original)
+    def remove_image_resource(self, path):
+        if path in self.image_resources:
+            del self.image_resources[path]
 
     def get_image_resource(self, path):
         """ Will fetch an image resource and save it to the resources dictionary """

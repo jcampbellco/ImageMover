@@ -66,7 +66,7 @@ class Interface(Tk):
         # @todo: Actually set up the source list to work properly with adding/removing
         self.source_list = tkinter.Listbox(self.sources_frame)
         self.populate_listbox(self.source_list, "sources")
-        self.source_list.bind('<Double-Button-1>', self.move_image_handler)
+        # self.source_list.bind('<Double-Button-1>', self.move_image_handler)
         self.source_list.grid(row=1, column=0, columnspan=2, sticky="ns")
 
         self.add_source = tkinter.Button(self.sources_frame)
@@ -152,6 +152,8 @@ class Interface(Tk):
 
         self.set_image(self.filesystem.get_next_image(self.filesystem.current_filename))
 
+        self.filesystem.remove_image_resource(self.filesystem.current_filename)
+
     def on_resize(self, event):
         print("Resizing... " + str((event.width, event.height)))
         if hasattr(self.image_preview, 'image'):
@@ -167,6 +169,8 @@ class Interface(Tk):
         self.image_preview.image = image
         self.image_preview.thumb = thumb
         self.image_preview.configure(image=thumb)
+
+        self.wm_title(self.filesystem.get_filename(self.filesystem.current_filename))
 
     def get_imageframe_size(self):
         return self.image_preview.winfo_width(), self.image_preview.winfo_height()
