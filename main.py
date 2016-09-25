@@ -9,5 +9,5 @@ if __name__ == "__main__":
     interface = Interface(config, filesystem)
     application = Application(config, filesystem, interface)
 
-    interface.minsize(640, 480)
+    interface.minsize(800, 600)
     interface.mainloop()

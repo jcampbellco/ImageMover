@@ -8,27 +8,20 @@ class Filesystem:
 
     images = {}
 
+    image_resources = {}
+
     current_filename = None
 
     def __init__(self, config: Config):
         self.config = config
         self.get_image_list()
 
-    '''
-        If there are images available in the self.images dictionary, get the first one and put it into current_image
-    '''
-
     def get_new_image(self):
         self.current_filename = self.images.popitem()[1] if len(self.images) > 0 else None
         print("Fetching " + str(self.current_filename))
         return self.current_filename
 
-    '''
-        Returns a list of the files to be sorted
-    '''
-
     def get_image_list(self):
-        self.images = {}
         i = 0
 
         for source in self.config[Config.SOURCES]:
@@ -38,13 +31,13 @@ class Filesystem:
                     self.images[i] = file
                     i += 1
 
-        print("Found " + str(len(self.images)) + " images in " + str(len(self.config[Config.SOURCES])) + " directories")
+                    if file not in self.image_resources:
+                        self.image_resources[file] = None
+
+        print("Found " + str(len(self.image_resources)) + " images in " + str(len(self.config[Config.SOURCES])) +
+              " directories")
 
         return self.images
-
-    '''
-        Fetches an image resource to be used by the TK label
-    '''
 
     def get_image(self, size):
         if self.images.__len__() <= 0:
@@ -57,9 +50,35 @@ class Filesystem:
         # @todo get rid of the dependency on ImageTk - filesystem shouldn't have knowledge of the interface
         return ImageTk.PhotoImage(original)
 
-    '''
-        Given a file path, return the last item (the directory name, or filename perhaps)
-    '''
+    def get_image_resource(self, path):
+        """ Will fetch an image resource and save it to the resources dictionary """
+        if path not in self.image_resources:
+            raise KeyError("The requested path " + path + " is not present in the image dictionary")
+
+        if self.image_resources[path] is None:
+            self.image_resources[path] = Image.open(path)
+
+        self.current_filename = path
+
+        return self.image_resources[path]
+
+    def get_next_image(self, path=None):
+        if len(self.image_resources) <= 0:
+            return "test"
+
+        paths = list(self.image_resources.keys())
+
+        if path is None or len(self.image_resources) is 1:
+            return self.get_image_resource(paths[0])
+
+        key_list = sorted(self.image_resources.keys())
+        for i, v in enumerate(key_list):
+            if v == path:
+                # If the specified path is the last item, return the first
+                if i + 1 == len(self.image_resources):
+                    return self.get_image_resource(paths[0])
+
+                return self.get_image_resource(paths[i + 1])
 
     @staticmethod
     def get_filename(path):

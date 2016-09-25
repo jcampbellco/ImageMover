@@ -4,9 +4,9 @@ import os
 from tkinter import Tk
 from tkinter import ttk
 from tkinter import filedialog
-from tkinter import PhotoImage
 from Config import Config
 from Filesystem import Filesystem
+from PIL import Image, ImageTk
 
 
 class Interface(Tk):
@@ -17,6 +17,8 @@ class Interface(Tk):
 
         self.config = config
         self.filesystem = filesystem
+
+        self.bind("<Configure>", self.on_resize)
 
         self.image_frame = tkinter.Frame(self)
         self.image_frame.pack(side="left", fill="both", expand=True, padx=5)
@@ -33,8 +35,8 @@ class Interface(Tk):
         self.sources_frame = tkinter.Frame(self.control_frame)
         self.sources_frame.pack(fill="y", expand=1)
 
-        self.image_preview = tkinter.Label(self.image_frame, height=self.size[0], width=self.size[1])
-        self.image_preview.grid(row=0, column=0, rowspan=3, padx=5, pady=5)
+        self.image_preview = tkinter.Label(self.image_frame)
+        self.image_preview.pack(fill="both", expand=True)
 
         # Add the thumbnail list here
 
@@ -80,7 +82,9 @@ class Interface(Tk):
         self.sources_frame.rowconfigure(1, weight=1)
         self.destinations_frame.rowconfigure(1, weight=1)
 
-        self.set_image(self.filesystem.get_image(self.get_imageframe_size()))
+        self.update()
+
+        self.set_image(filesystem.get_next_image())
 
     def populate_listbox(self, listbox, source):
         """Populate a provided listbox"""
@@ -146,11 +150,23 @@ class Interface(Tk):
 
         print("Moving " + filename + " from " + self.filesystem.current_filename + " to " + destination)
 
-        self.set_image(self.filesystem.get_image(self.get_imageframe_size()))
+        self.set_image(self.filesystem.get_next_image(self.filesystem.current_filename))
 
-    def set_image(self, image: PhotoImage):
+    def on_resize(self, event):
+        print("Resizing... " + str((event.width, event.height)))
+        if hasattr(self.image_preview, 'image'):
+            self.set_image(self.image_preview.image)
+        else:
+            self.set_image(self.filesystem.get_next_image())
+
+    def set_image(self, image: Image):
+        size = (self.image_preview.winfo_width(), self.image_preview.winfo_height())
+        image.thumbnail(size, Image.ANTIALIAS)
+        thumb = ImageTk.PhotoImage(image)
+
         self.image_preview.image = image
-        self.image_preview.configure(image=image)
+        self.image_preview.thumb = thumb
+        self.image_preview.configure(image=thumb)
 
     def get_imageframe_size(self):
         return self.image_preview.winfo_width(), self.image_preview.winfo_height()
