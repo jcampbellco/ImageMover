@@ -47,6 +47,9 @@ class Filesystem:
     '''
 
     def get_image(self, size):
+        if self.images.__len__() <= 0:
+            return
+
         original = Image.open(self.get_new_image())
 
         original.thumbnail(size, Image.ANTIALIAS)
