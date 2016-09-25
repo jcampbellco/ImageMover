@@ -33,9 +33,7 @@ class Interface(Tk):
         self.sources_frame = tkinter.Frame(self.control_frame)
         self.sources_frame.pack(fill="y", expand=1)
 
-        # image = self.filesystem.get_image(self.get_imageframe_size())
         self.image_preview = tkinter.Label(self.image_frame, height=self.size[0], width=self.size[1])
-        # self.image_preview.image = image
         self.image_preview.grid(row=0, column=0, rowspan=3, padx=5, pady=5)
 
         # Add the thumbnail list here
@@ -84,11 +82,8 @@ class Interface(Tk):
 
         self.set_image(self.filesystem.get_image(self.get_imageframe_size()))
 
-    '''
-        Populate the listbox
-    '''
-
     def populate_listbox(self, listbox, source):
+        """Populate a provided listbox"""
         listbox.delete(0, tkinter.END)
         for directory in self.config[source]:
             listbox.insert(tkinter.END, directory)
@@ -99,14 +94,11 @@ class Interface(Tk):
     def add_destination_handler(self):
         self.add_directory(self.destination_list, Config.DESTINATIONS)
 
-    '''
-        Handler for adding a new directory
-    '''
-
     def add_directory(self, listbox, config_source):
+        """Handler for adding a new directory"""
         directory = self.get_directory()
 
-        short_dir = self.get_filename(directory)
+        short_dir = Filesystem.get_filename(directory)
 
         # short circuit if there was not a directory selected
         if not directory or short_dir in self.config[config_source]:
@@ -125,10 +117,6 @@ class Interface(Tk):
         directory = self.config[Config.DESTINATIONS][self.destination_list.get(tkinter.ACTIVE)]
         self.remove_directory(Config.DESTINATIONS, directory, self.destination_list)
 
-    '''
-        Handler for removing a directory
-    '''
-
     def remove_directory(self, config_source, directory, listbox):
         # This feels a bit dirty, but I'm not sure how to handle the directory coming in as the full path, but needing
         # the key to access it... @todo Get the key from the listbox, not the item?
@@ -146,11 +134,6 @@ class Interface(Tk):
         else:
             print("Unable to find directory " + directory + " to remove")
 
-    '''
-        Handler for moving an image
-        The event param isn't used, but is passed in.
-    '''
-
     def move_image_handler(self, event):
         # is this actually the best way to get the selected destination directory?
         destination = self.config[Config.DESTINATIONS][self.destination_list.get(tkinter.ACTIVE)]
@@ -165,22 +148,12 @@ class Interface(Tk):
 
         self.set_image(self.filesystem.get_image(self.get_imageframe_size()))
 
-    '''
-        Sets a new image to the preview window
-    '''
     def set_image(self, image: PhotoImage):
         self.image_preview.image = image
         self.image_preview.configure(image=image)
 
-    '''
-        Returns the current size of the image frame
-    '''
     def get_imageframe_size(self):
         return self.image_preview.winfo_width(), self.image_preview.winfo_height()
-
-    '''
-        Returns a directory path
-    '''
 
     @staticmethod
     def get_directory(message=None):
