@@ -1,4 +1,5 @@
 import glob
+import logging
 from appdirs import *
 from Config import Config
 from File import File
@@ -19,15 +20,15 @@ class Filesystem:
 
         for source in self.config[Config.SOURCES]:
             for extension in self.config[Config.EXTENSIONS]:
-                print("Scanning " + self.config[Config.SOURCES][source] + '/*.' + extension)
+                logging.info("Scanning " + self.config[Config.SOURCES][source] + '/*.' + extension)
                 for file in glob.glob(self.config[Config.SOURCES][source] + '/*.' + extension):
                     i += 1
 
                     if file not in self.image_resources:
                         self.image_resources[file] = File(file)
 
-        print("Found " + str(len(self.image_resources)) + " images in " + str(len(self.config[Config.SOURCES])) +
-              " directories")
+        logging.info("Found " + str(len(self.image_resources)) + " images in " + str(len(self.config[Config.SOURCES])) +
+                     " directories")
 
         return self.image_resources
 

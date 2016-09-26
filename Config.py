@@ -1,3 +1,4 @@
+import logging
 from configparser import ConfigParser
 from appdirs import *
 
@@ -16,23 +17,18 @@ class Config(ConfigParser):
 
         self.read(self.get_config_path())
 
-        print("Read config from " + self.get_config_path())
+        logging.info("Read config from " + self.get_config_path())
 
-    '''
-        Write the config file
-    '''
     def write(self):
+        """ Write the config file to disk """
         if not os.path.exists(self.get_config_directory()):
             os.makedirs(self.get_config_directory())
 
         with open(self.get_config_path(), 'w') as configfile:
             super(Config, self).write(configfile)
 
-        print("Wrote config to " + self.get_config_path())
+        logging.info("Wrote config to " + self.get_config_path())
 
-    '''
-        Returns the full path to the config.ini file
-    '''
     @staticmethod
     def get_config_path():
         return os.path.join(Config.get_config_directory(), 'config.ini')

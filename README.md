@@ -6,14 +6,12 @@ I used to know of a plugin for Firefox that would save images directly to a dire
 Frustrated that Chrome didn't offer a similar plugin, I decided to whip up a little image mover to help at least bulk-save images then clean them up.
 
 # Usage
-Make sure you have the appropriate paths configured as seen below
-
-Once that's done, you should be able to open the application and see an image to the left hand side. On the right, will be your sources, along with an Add or Remove directory button.
+Opening the application for the first time should show nothing, on the right hand side add some source and destination directories to get started.
 
 Double click any of the items in the list on the right, and the image you see will be moved to that directory. It couldn't be more simple!
 
 # Configuration
-The config file is stored (on Windows) in the AppData directory. For Windows, it's located at `%appdata%\Local\reddeth\ImageMover` in a file called `config.ini`
+The config file is stored (on Windows) in the AppData directory. For Windows, it's located at `%appdata%\Local\ImageMover\ImageMover` in a file called `config.ini`
 
 If you have already run the application once, that file should be created. It's structure will look like:
 
@@ -40,12 +38,24 @@ Hopefully it should be fairly self explanatory, but the three sections are confi
 
 # ToDo
 
-* Break up code into multiple files/classes
-* Add list of source directories
+* ~~Break up code into multiple files/classes~~
+* ~~Add list of source directories~~
 * Add configuration menu for file extensions
 * Add prev/next buttons under image preview
-* Make images resize to fill the window while maintaining aspect ratio
+* ~~Make images resize to fill the window while maintaining aspect ratio~~
+* Add options for checking for duplicate images
+* Handle instances where the destination path already exists (by name)
 
 # Bugs
 
-* The program should open at roughly 800x600 pixels, which is what the images are dynamically resized to. However, if there are no images to load, the entire UI lags, does not load, and instead a full-screen grey box shows up
+* When the program first opens, even if there is an image to load, it fails to load the image preview, even on subsequent file move events
+
+# Duplicate Finder
+
+In of itself a "duplicate checker" is an intense operation, especially if the destination directory has a large number of images in it already.
+
+Based on this very nice article (http://www.pyimagesearch.com/2014/09/15/python-compare-two-images/) it looks easy enough to compare two images to each other (and adding this functionality to the File object would be trivial)
+
+However, my preferred method of doing this feature would be to find a mechanism for generating a simple hash of an image, build out a database of hashes for existing images, then compare the image being moved against the existing database, a secondary (and more "accurate") check can then be made against images that seem similar.
+
+The package https://github.com/JohannesBuchner/imagehash seems to offer functionality similar to what I'm looking for.

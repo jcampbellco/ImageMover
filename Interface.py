@@ -1,6 +1,7 @@
 import tkinter
 import shutil
 import os
+import logging
 from tkinter import Tk
 from tkinter import ttk
 from tkinter import filedialog
@@ -114,7 +115,7 @@ class Interface(Tk):
         self.config[config_source][short_dir] = directory
 
         self.populate_listbox(listbox, config_source)
-        print("Adding " + directory + " to " + config_source + " list")
+        logging.info("Adding " + directory + " to " + config_source + " list")
 
     def remove_source_handler(self):
         directory = self.config[Config.SOURCES][self.source_list.get(tkinter.ACTIVE)]
@@ -136,10 +137,10 @@ class Interface(Tk):
         removed = self.config[config_source].pop(directory, 0)
 
         if removed != 0:
-            print("Removing " + directory + " from the " + config_source + " list")
+            logging.info("Removing " + directory + " from the " + config_source + " list")
             self.populate_listbox(listbox, config_source)
         else:
-            print("Unable to find directory " + directory + " to remove")
+            logging.warning("Unable to find directory " + directory + " to remove")
 
     def move_image_handler(self, event):
         # is this actually the best way to get the selected destination directory?
@@ -151,14 +152,13 @@ class Interface(Tk):
 
         shutil.move(self.filesystem.current_filename, destination_full)
 
-        print("Moving " + filename + " from " + self.filesystem.current_filename + " to " + destination)
+        logging.info("Moving " + filename + " from " + self.filesystem.current_filename + " to " + destination)
 
         self.set_image(self.filesystem.get_next_image(self.filesystem.current_filename))
 
         self.filesystem.remove_image_resource(self.filesystem.current_filename)
 
     def on_resize(self, event):
-        print("Resizing... " + str((event.width, event.height)))
         if self.image is not None:
             self.set_image(self.image)
         else:
@@ -198,7 +198,7 @@ class Interface(Tk):
         directory = filedialog.askdirectory(title=message)
 
         if not directory:
-            print("No directory selected")
+            logging.info("No directory selected")
             return None
 
         return directory
