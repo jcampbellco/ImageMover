@@ -164,6 +164,10 @@ class Interface(Tk):
             self.set_image(self.filesystem.get_next_image())
 
     def set_image(self, image: Image):
+        if image is None:
+            self.clear_image()
+            return
+
         size = (self.image_preview.winfo_width(), self.image_preview.winfo_height())
         image.thumbnail(size, Image.ANTIALIAS)
         thumb = ImageTk.PhotoImage(image)
@@ -173,6 +177,13 @@ class Interface(Tk):
         self.image_preview.configure(image=thumb)
 
         self.wm_title(self.filesystem.get_filename(self.filesystem.current_filename))
+
+    def clear_image(self):
+        self.image = None
+        self.thumb = None
+        self.image_preview.configure(image="")
+
+        self.wm_title('No images')
 
     def get_imageframe_size(self):
         return self.image_preview.winfo_width(), self.image_preview.winfo_height()

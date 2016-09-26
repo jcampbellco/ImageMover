@@ -49,7 +49,7 @@ class Filesystem:
 
     def get_next_image(self, path=None):
         if len(self.image_resources) <= 0:
-            raise Exception("No more image resources")
+            return
 
         paths = list(self.image_resources.keys())
 
