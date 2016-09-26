@@ -7,6 +7,7 @@ from tkinter import filedialog
 from Config import Config
 from Filesystem import Filesystem
 from PIL import Image, ImageTk
+from File import File
 
 
 class Interface(Tk):
@@ -163,16 +164,17 @@ class Interface(Tk):
         else:
             self.set_image(self.filesystem.get_next_image())
 
-    def set_image(self, image: Image):
-        if image is None:
+    def set_image(self, file: File):
+        if file is None:
             self.clear_image()
             return
 
         size = (self.image_preview.winfo_width(), self.image_preview.winfo_height())
-        image.thumbnail(size, Image.ANTIALIAS)
+
+        image = file.get_thumbnail(size)
         thumb = ImageTk.PhotoImage(image)
 
-        self.image = image
+        self.image = file
         self.thumb = thumb
         self.image_preview.configure(image=thumb)
 

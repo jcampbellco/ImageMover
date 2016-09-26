@@ -1,7 +1,7 @@
 import glob
 from appdirs import *
 from Config import Config
-from PIL import Image
+from File import File
 
 
 class Filesystem:
@@ -24,7 +24,7 @@ class Filesystem:
                     i += 1
 
                     if file not in self.image_resources:
-                        self.image_resources[file] = None
+                        self.image_resources[file] = File(file)
 
         print("Found " + str(len(self.image_resources)) + " images in " + str(len(self.config[Config.SOURCES])) +
               " directories")
@@ -40,14 +40,17 @@ class Filesystem:
         if path not in self.image_resources:
             raise KeyError("The requested path " + path + " is not present in the image dictionary")
 
-        if self.image_resources[path] is None:
-            self.image_resources[path] = Image.open(path)
-
         self.current_filename = path
 
         return self.image_resources[path]
 
     def get_next_image(self, path=None):
+        """
+        Gets the next image based on the provided path
+        i.e.: Given a dictionary of images A, B, and C, if B is given as path, C will be returned
+        :param path:
+        :rtype: File
+        """
         if len(self.image_resources) <= 0:
             return
 
