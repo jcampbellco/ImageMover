@@ -11,6 +11,8 @@ from PIL import Image, ImageTk
 
 class Interface(Tk):
     size = (640, 480)
+    image = None
+    thumb = None
 
     def __init__(self, config: Config, filesystem: Filesystem):
         Tk.__init__(self)
@@ -156,8 +158,8 @@ class Interface(Tk):
 
     def on_resize(self, event):
         print("Resizing... " + str((event.width, event.height)))
-        if hasattr(self.image_preview, 'image'):
-            self.set_image(self.image_preview.image)
+        if self.image is not None:
+            self.set_image(self.image)
         else:
             self.set_image(self.filesystem.get_next_image())
 
@@ -166,8 +168,8 @@ class Interface(Tk):
         image.thumbnail(size, Image.ANTIALIAS)
         thumb = ImageTk.PhotoImage(image)
 
-        self.image_preview.image = image
-        self.image_preview.thumb = thumb
+        self.image = image
+        self.thumb = thumb
         self.image_preview.configure(image=thumb)
 
         self.wm_title(self.filesystem.get_filename(self.filesystem.current_filename))

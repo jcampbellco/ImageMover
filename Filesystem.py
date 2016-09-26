@@ -49,21 +49,19 @@ class Filesystem:
 
     def get_next_image(self, path=None):
         if len(self.image_resources) <= 0:
-            return "test"
+            raise Exception("No more image resources")
 
         paths = list(self.image_resources.keys())
 
-        if path is None or len(self.image_resources) is 1:
-            return self.get_image_resource(paths[0])
+        offset = 0
 
-        key_list = sorted(self.image_resources.keys())
-        for i, v in enumerate(key_list):
-            if v == path:
-                # If the specified path is the last item, return the first
-                if i + 1 == len(self.image_resources):
-                    return self.get_image_resource(paths[0])
+        if path is not None:
+            key_list = sorted(self.image_resources.keys())
+            for i, v in enumerate(key_list):
+                if v == path and ((i + 1) != len(self.image_resources)):
+                    offset = i + 1
 
-                return self.get_image_resource(paths[i + 1])
+        return self.get_image_resource(paths[offset])
 
     @staticmethod
     def get_filename(path):
