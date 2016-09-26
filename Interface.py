@@ -7,8 +7,9 @@ from tkinter import ttk
 from tkinter import filedialog
 from Config import Config
 from Filesystem import Filesystem
-from PIL import Image, ImageTk
+from PIL import ImageTk
 from File import File
+import sys
 
 
 class Interface(Tk):
@@ -44,8 +45,7 @@ class Interface(Tk):
 
         # Add the thumbnail list here
 
-        self.destination_label = tkinter.Label(self.destinations_frame)
-        self.destination_label["text"] = "Destinations"
+        self.destination_label = tkinter.Label(self.destinations_frame, text="Destinations")
         self.destination_label.grid(row=0, column=0, columnspan=2)
 
         self.destination_list = tkinter.Listbox(self.destinations_frame)
@@ -53,42 +53,67 @@ class Interface(Tk):
         self.destination_list.bind('<Double-Button-1>', self.move_image_handler)
         self.destination_list.grid(row=1, column=0, columnspan=2, sticky="ns")
 
-        self.add_destination = tkinter.Button(self.destinations_frame)
-        self.add_destination["text"] = "Add"
-        self.add_destination["command"] = self.add_destination_handler
+        self.add_destination = tkinter.Button(self.destinations_frame, text="Add", command=self.add_destination_handler)
         self.add_destination.grid(row=2, column=0, sticky="ew")
 
-        self.remove_destination = tkinter.Button(self.destinations_frame)
-        self.remove_destination["text"] = "Remove"
-        self.remove_destination["command"] = self.remove_destination_handler
+        self.remove_destination = tkinter.Button(self.destinations_frame, text="Remove",
+                                                 command=self.remove_destination_handler)
         self.remove_destination.grid(row=2, column=1, sticky="ew", pady=5)
 
-        self.source_label = tkinter.Label(self.sources_frame)
-        self.source_label["text"] = "Sources"
+        self.source_label = tkinter.Label(self.sources_frame, text="Sources")
         self.source_label.grid(row=0, column=0, columnspan=2, sticky="ns", pady=5)
 
         # @todo: Actually set up the source list to work properly with adding/removing
         self.source_list = tkinter.Listbox(self.sources_frame)
         self.populate_listbox(self.source_list, "sources")
-        # self.source_list.bind('<Double-Button-1>', self.move_image_handler)
         self.source_list.grid(row=1, column=0, columnspan=2, sticky="ns")
 
-        self.add_source = tkinter.Button(self.sources_frame)
-        self.add_source["text"] = "Add"
-        self.add_source["command"] = self.add_source_handler
+        self.add_source = tkinter.Button(self.sources_frame, text="Add", command=self.add_source_handler)
         self.add_source.grid(row=2, column=0, sticky="ew", pady=5)
 
-        self.remove_source = tkinter.Button(self.sources_frame)
-        self.remove_source["text"] = "Remove"
-        self.remove_source["command"] = self.remove_source_handler
+        self.remove_source = tkinter.Button(self.sources_frame, text="Remove", command=self.remove_source_handler)
         self.remove_source.grid(row=2, column=1, sticky="ew", pady=5)
 
         self.sources_frame.rowconfigure(1, weight=1)
         self.destinations_frame.rowconfigure(1, weight=1)
 
+        self.menubar = tkinter.Menu(self)
+
+        self.filemenu = tkinter.Menu(self.menubar, tearoff=0)
+        self.filemenu.add_command(label="Quit", command=self.quit)
+        self.menubar.add_cascade(label="File", menu=self.filemenu)
+
+        self.helpmenu = tkinter.Menu(self.menubar, tearoff=0)
+        self.menubar.add_cascade(label="Help", menu=self.helpmenu)
+
+        self.debuglevel = tkinter.IntVar()
+        self.debuglevel.set(logging.getLogger().level)
+
+        self.debugmenu = tkinter.Menu(self.helpmenu, tearoff=0)
+        self.debugmenu.add_radiobutton(label="OFF", command=self.set_logging, variable=self.debuglevel,
+                                       value=logging.NOTSET)
+        self.debugmenu.add_radiobutton(label="DEBUG", command=self.set_logging, variable=self.debuglevel,
+                                       value=logging.DEBUG)
+        self.debugmenu.add_radiobutton(label="INFO", command=self.set_logging, variable=self.debuglevel,
+                                       value=logging.INFO)
+        self.debugmenu.add_radiobutton(label="WARNING", command=self.set_logging, variable=self.debuglevel,
+                                       value=logging.WARNING)
+        self.debugmenu.add_radiobutton(label="ERROR", command=self.set_logging, variable=self.debuglevel,
+                                       value=logging.ERROR)
+        self.debugmenu.add_radiobutton(label="CRITICAL", command=self.set_logging, variable=self.debuglevel,
+                                       value=logging.CRITICAL)
+
+        self.helpmenu.add_cascade(label="Set Debug Level", menu=self.debugmenu)
+
+        self.configure(menu=self.menubar)
+
         self.update()
 
         self.set_image(filesystem.get_next_image())
+
+    def set_logging(self):
+        logging.getLogger().setLevel(self.debuglevel.get())
+        return
 
     def populate_listbox(self, listbox, source):
         """Populate a provided listbox"""
